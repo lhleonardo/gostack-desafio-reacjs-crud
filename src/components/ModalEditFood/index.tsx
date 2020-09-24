@@ -5,6 +5,8 @@ import { FormHandles } from '@unform/core';
 import { Form } from './styles';
 import Modal from '../Modal';
 import Input from '../Input';
+import * as yup from 'yup';
+import { extractValidationMessages } from '../../utils/ValidatorMessages';
 
 interface IFoodPlate {
   id: number;
@@ -29,6 +31,19 @@ interface IEditFoodData {
   description: string;
 }
 
+const schema = yup.object().shape({
+  name: yup.string().required('O nome é obrigatório'),
+  price: yup
+    .number()
+    .min(0, 'Deve ter um preço com valor positivo.')
+    .required('O preço é obrigatório'),
+  description: yup.string().required('A descrição da comida é obrigatória'),
+  image: yup
+    .string()
+    .url('Precisa ser uma URL válida')
+    .required('A foto de ilustração é obrigatória'),
+});
+
 const ModalEditFood: React.FC<IModalProps> = ({
   isOpen,
   setIsOpen,
@@ -39,7 +54,19 @@ const ModalEditFood: React.FC<IModalProps> = ({
 
   const handleSubmit = useCallback(
     async (data: IEditFoodData) => {
-      // EDIT A FOOD PLATE AND CLOSE THE MODAL
+      try {
+        await schema.validate(data, { abortEarly: false });
+
+        handleUpdateFood(data);
+
+        setIsOpen();
+      } catch (err) {
+        if (err instanceof yup.ValidationError) {
+          // preencher os erros nos campos apropriados
+          const errors = extractValidationMessages(err);
+          formRef.current?.setErrors(errors);
+        }
+      }
     },
     [handleUpdateFood, setIsOpen],
   );

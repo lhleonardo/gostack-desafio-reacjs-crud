@@ -54,3 +54,11 @@ export const Container = styled.div<IContainerProps>`
     margin-right: 16px;
   }
 `;
+
+export const Error = styled.span`
+  font-size: 14px;
+
+  margin-top: 8px;
+  margin-bottom: 16px;
+  color: #c72828;
+`;
